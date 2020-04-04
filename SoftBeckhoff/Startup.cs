@@ -12,6 +12,7 @@ using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
 using System.Reflection;
+using SoftBeckhoff.Services;
 
 namespace SoftBeckhoff
 {
@@ -51,6 +52,7 @@ namespace SoftBeckhoff
 		        //c.IncludeXmlComments(xmlPath);
             });
             services.AddCors();
+            services.AddSingleton<IPlcService, BeckhoffService>();
         }
 
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.
@@ -83,6 +85,8 @@ namespace SoftBeckhoff
             });
 
 			app.UseCors(options => options.AllowAnyOrigin());
+
+            var plcService = app.ApplicationServices.GetService<IPlcService>();
         }
     }
 }
