@@ -8,8 +8,7 @@ on:
 
 jobs:
   build:
-    env:
-      working-directory : ./SoftBeckhoff
+    
     runs-on: ubuntu-latest
 
     steps:
@@ -19,9 +18,9 @@ jobs:
       with:
         dotnet-version: 3.1.101
     - name: Install dependencies
-      working-directory: ${{env:working-directory}}
+      working-directory: ./SoftBeckhoff
       run: dotnet restore
     - name: Build
-      working-directory: ${{env:working-directory}}
+      working-directory: ./SoftBeckhoff
       run: dotnet build --configuration Release --no-restore
     
