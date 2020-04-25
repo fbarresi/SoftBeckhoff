@@ -14,4 +14,4 @@ jobs:
     - uses: actions/checkout@v2
     - name: Build the Docker image
       working-directory: ./SoftBeckhoff
-      run: docker build . --file ../Docker/Dockerfile --tag softbeckhoff:$(date +%s)
+      run: docker build . --file ../Docker/Dockerfile --tag fbarresi/softbeckhoff:${{GITHUB_RUN_NUMBER}}
