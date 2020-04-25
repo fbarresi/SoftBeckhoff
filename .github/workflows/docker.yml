@@ -15,3 +15,11 @@ jobs:
     - name: Build the Docker image
       working-directory: ./SoftBeckhoff
       run: docker build . --file ../Docker/Dockerfile --tag fbarresi/softbeckhoff:1.0.$GITHUB_RUN_NUMBER
+    - name: Docker login
+      run: docker login -u="${{ secrets.DOCKER_USERNAME }}" -p="${{ secrets.DOCKER_PASSWORD }}"
+    - name: Docker push
+      run: |
+        docker push fbarresi/softbeckhoff:1.0.$GITHUB_RUN_NUMBER
+        docker tag fbarresi/softbeckhoff:1.0.$GITHUB_RUN_NUMBER fbarresi/softbeckhoff:latest
+        docker push fbarresi/softbeckhoff:latest
+        
