@@ -18,5 +18,6 @@ ENTRYPOINT ["dotnet", "SoftBeckhoff.dll"]
 EXPOSE 80/tcp
 
 EXPOSE 48898/tcp
+EXPOSE 48899/udp
 
 EXPOSE 851/tcp
