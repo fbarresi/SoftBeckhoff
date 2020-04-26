@@ -58,7 +58,7 @@ namespace SoftBeckhoff.Services
 			    ?.Invoke(new[] {logger});
 			logger.LogInformation($"Beckhoff server created");
 			Task.Delay(500).Wait();
-		    var result = server.AmsConnect(851, "SoftPlc");
+		    var result = server.AmsConnect(852, "SoftPlc");
 		    var connected = server.IsServerConnected;
 			logger.LogInformation($"Beckhoff server connected = {connected} with result = {result}");
 	    }
