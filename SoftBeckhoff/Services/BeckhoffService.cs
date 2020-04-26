@@ -1,6 +1,10 @@
 using System;
+using System.Reactive;
+using System.Reactive.Disposables;
+using System.Reactive.Linq;
 using System.Reflection;
 using System.Threading;
+using System.Threading.Tasks;
 using Microsoft.Extensions.Logging;
 using TwinCAT.Ads.Server;
 
@@ -8,24 +12,38 @@ namespace SoftBeckhoff.Services
 {
     public class BeckhoffService : IPlcService
     {
+		private readonly CompositeDisposable disposables = new CompositeDisposable();
+		private readonly ILogger logger;
         public BeckhoffService(ILogger<BeckhoffService> logger)
         {
-	        var server = new BeckhoffServer(logger);
+			this.logger = logger;
+
+			var init = Observable.Timer(TimeSpan.FromMilliseconds(500))
+			.SelectMany(_ => InitializeAsync())
+			.Subscribe();
+			disposables.Add(init);
         }
 
         public void Dispose()
 		{
 			
-		}   
+		}
+
+		private Task<Unit> InitializeAsync()
+		{
+			logger.LogInformation("Initializing Beckhoff server...");
+			var server = new BeckhoffServer(logger);
+			return Task.FromResult(Unit.Default);
+		}
     }
 
     public class BeckhoffServer
     {
-	    private readonly ILogger _logger;
+	    private readonly ILogger logger;
 
 	    public BeckhoffServer(ILogger logger)
 	    {
-		    _logger = logger;
+		    this.logger = logger;
 		    var server = (AmsServerNet) typeof(AmsServerNet)
 			    .GetConstructor(BindingFlags.NonPublic | BindingFlags.Instance, 
 				    null, 
@@ -33,8 +51,11 @@ namespace SoftBeckhoff.Services
 				    new []{typeof(ILogger)}, 
 				    null)
 			    ?.Invoke(new[] {logger});
+			logger.LogInformation($"Beckhoff server created");
+			Task.Delay(500).Wait();
 		    var result = server.AmsConnect(851, "SoftPlc");
 		    var connected = server.IsServerConnected;
+			logger.LogInformation($"Beckhoff server connected = {connected} with result = {result}");
 	    }
     }
 }
