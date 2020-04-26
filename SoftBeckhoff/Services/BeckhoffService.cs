@@ -14,6 +14,7 @@ namespace SoftBeckhoff.Services
     {
 		private readonly CompositeDisposable disposables = new CompositeDisposable();
 		private readonly ILogger logger;
+		private BeckhoffServer server;
         public BeckhoffService(ILogger<BeckhoffService> logger)
         {
 			this.logger = logger;
@@ -32,7 +33,7 @@ namespace SoftBeckhoff.Services
 		private Task<Unit> InitializeAsync()
 		{
 			logger.LogInformation("Initializing Beckhoff server...");
-			var server = new BeckhoffServer(logger);
+			server = new BeckhoffServer(logger);
 			return Task.FromResult(Unit.Default);
 		}
     }
@@ -40,11 +41,11 @@ namespace SoftBeckhoff.Services
     public class BeckhoffServer
     {
 	    private readonly ILogger logger;
-
+	private readonly AmsServerNet server;
 	    public BeckhoffServer(ILogger logger)
 	    {
 		    this.logger = logger;
-		    var server = (AmsServerNet) typeof(AmsServerNet)
+		    server = (AmsServerNet) typeof(AmsServerNet)
 			    .GetConstructor(BindingFlags.NonPublic | BindingFlags.Instance, 
 				    null, 
 				    CallingConventions.Any, 
