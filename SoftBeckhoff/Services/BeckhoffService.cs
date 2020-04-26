@@ -21,6 +21,10 @@ namespace SoftBeckhoff.Services
 
 			var init = Observable.Timer(TimeSpan.FromMilliseconds(500))
 			.SelectMany(_ => InitializeAsync())
+			.Do(
+					_ => { },
+					ex => logger?.LogError(ex, "Error while initializing Beckhoff Service"))
+			.Retry()
 			.Subscribe();
 			disposables.Add(init);
         }
