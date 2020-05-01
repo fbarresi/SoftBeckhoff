@@ -22,7 +22,10 @@ namespace SoftBeckhoff
             Host.CreateDefaultBuilder(args)
                 .ConfigureServices((context, services) =>
                 {
-                    services.AddHostedService<RouterService>();
+                    if (args.Contains("--add-router"))
+                    {
+                        services.AddHostedService<RouterService>();
+                    }
                 })
                 .ConfigureAppConfiguration((context, config) =>
                 {
