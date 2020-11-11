@@ -70,25 +70,10 @@ namespace SoftBeckhoff.Services
 		    var result = server.AmsConnect(852, "SoftPlc");
 		    var connected = server.IsServerConnected;
 			logger.LogInformation($"Beckhoff server connected = {connected} with result = {result}");
-			stream = (NetworkStream)typeof(AmsServerNet).GetTypeInfo().GetDeclaredMethod("registerCommandPipe")?.Invoke(server, new object[0]);
 
 			disposables.Add(server);
-			disposables.Add(stream);
 
 			server.RegisterReceiver(this);
-			
-			var inputStream = Observable.Interval(TimeSpan.FromSeconds(1))
-				.Where(_ => stream.CanRead)
-				.Select(_ =>
-				{
-					var buffer = new byte[1024];
-					var read = stream.Read(new Span<byte>(buffer));
-					return buffer.Take(read);
-				})
-				.Select(buffer => Encoding.ASCII.GetString(buffer.ToArray()))
-				.Subscribe(Console.WriteLine)
-				;
-			disposables.Add(inputStream);
 	    }
 
 	public void Dispose()
@@ -99,8 +84,8 @@ namespace SoftBeckhoff.Services
 	public async Task<AdsErrorCode> OnReceivedAsync(AmsCommand frame, CancellationToken cancel)
 	{
 		logger.LogInformation($"{frame.Dump()}");
-		//await server.AmsSendAsync(new AmsCommand(new AmsHeader(frame.Header.Sender, frame.Header.Target, AdsCommandId.ReadState, AmsStateFlags.MaskAdsResponse, 0, 0, 0), new ReadOnlyMemory<byte>()), cancel);
-		return AdsErrorCode.Succeeded;
+		var result = server.AmsSendSync(new AmsCommand(new AmsHeader(frame.Header.Sender, frame.Header.Target, frame.Header.CommandId, AmsStateFlags.MaskAdsResponse, 8, 0, frame.Header.HUser), new ReadOnlyMemory<byte>(new byte[]{0,0,0,0,5,0,0,0})));
+		return AdsErrorCode.NoError;
 	}
     }
 }
