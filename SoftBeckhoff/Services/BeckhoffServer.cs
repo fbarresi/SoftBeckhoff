@@ -1,7 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Net.Sockets;
+using System.Reactive;
 using System.Reactive.Disposables;
 using System.Reflection;
 using System.Threading;
@@ -49,7 +49,8 @@ namespace SoftBeckhoff.Services
 
         public byte[] RunStatus { get; set; } = {0, 0, 0, 0, 5, 0, 0, 0};
         
-        public SymbolUploadInfo SymbolUploadInfo { get; set; } = new SymbolUploadInfo();
+        public SymbolUploadInfo SymbolUploadInfo { get; set; } = new SymbolUploadInfo(1);
+        public AdsSymbolEntry AdsSymbolEntry { get; set; } = new AdsSymbolEntry(Unit.Default);
         
         public async Task<AdsErrorCode> OnReceivedAsync(AmsCommand frame, CancellationToken cancel)
         {
@@ -72,9 +73,10 @@ namespace SoftBeckhoff.Services
 
                 if (request.IndexGroup == 61451)
                 {
-                    var responseHeader = new ResponseHeaderData {Lenght = 0};
+                    var responseHeader = new ResponseHeaderData {Lenght = request.Lenght};
                     responseData.AddRange(responseHeader.GetBytes());
-                    //todo Ads Symbol entries goes here...
+                    responseData.AddRange(AdsSymbolEntry.GetBytes());
+
                 }
             }
             else if (frame.Header.CommandId == AdsCommandId.ReadState)

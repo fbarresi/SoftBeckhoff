@@ -31,7 +31,7 @@ namespace SoftBeckhoff.Structs
             MaxDynamicSymbolCount = 0;
             UsedDynamicSymbolCount = 0;
             InvalidDynamicSymbolCount = 0;
-            EncodingCodePage = 0;
+            EncodingCodePage = 20127; // ASCII
             Reserve1 = 0;
             Reserve2 = 0;
             Reserve3 = 0;
