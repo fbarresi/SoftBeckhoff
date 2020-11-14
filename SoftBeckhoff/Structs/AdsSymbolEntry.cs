@@ -19,8 +19,8 @@ namespace SoftBeckhoff.Structs
         [MarshalAs(UnmanagedType.U2)]public ushort TypeLength;
         [MarshalAs(UnmanagedType.U2)]public ushort CommentLength;
 
-        [MarshalAs(UnmanagedType.ByValArray, SizeConst = 81)] public byte[] Name;
-        [MarshalAs(UnmanagedType.ByValArray, SizeConst = 81)] public byte[] Type;
+        [MarshalAs(UnmanagedType.ByValArray, SizeConst = 5)] public byte[] Name;
+        [MarshalAs(UnmanagedType.ByValArray, SizeConst = 5)] public byte[] Type;
         [MarshalAs(UnmanagedType.ByValArray, SizeConst = 81)] public byte[] Comment;
         //array
         //guid
@@ -32,7 +32,7 @@ namespace SoftBeckhoff.Structs
         public AdsSymbolEntry(Unit unit)
         {
             EntryLength = (uint) new AdsSymbolEntry().GetSize();
-            IndexGroup = 61451;
+            IndexGroup = 61445;
             IndexOffset = 0;
             Size = 1;
             DataType = AdsDatatypeId.ADST_UINT8;
@@ -42,8 +42,8 @@ namespace SoftBeckhoff.Structs
             TypeLength = 4;
             CommentLength = 0;
 
-            Name = new byte[81];
-            Type = new byte[81];
+            Name = new byte[5];
+            Type = new byte[5];
             Comment = new byte[81];
 
             var nameBytes = Encoding.ASCII.GetBytes("Test");

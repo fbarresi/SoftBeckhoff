@@ -27,7 +27,7 @@ namespace SoftBeckhoff.Structs
             SymbolCount = count;
             SymbolsBlockSize = new AdsSymbolEntry().GetSize();
             DataTypeCount = 0;
-            DataTypesBlockSize = 0;
+            DataTypesBlockSize = 0;//new AdsDataTypeEntry().GetSize();
             MaxDynamicSymbolCount = 0;
             UsedDynamicSymbolCount = 0;
             InvalidDynamicSymbolCount = 0;

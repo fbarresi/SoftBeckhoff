@@ -51,6 +51,7 @@ namespace SoftBeckhoff.Services
         
         public SymbolUploadInfo SymbolUploadInfo { get; set; } = new SymbolUploadInfo(1);
         public AdsSymbolEntry AdsSymbolEntry { get; set; } = new AdsSymbolEntry(Unit.Default);
+        public AdsDataTypeEntry AdsDataTypeEntry { get; set; } = new AdsDataTypeEntry(null);
         
         public async Task<AdsErrorCode> OnReceivedAsync(AmsCommand frame, CancellationToken cancel)
         {
@@ -62,7 +63,6 @@ namespace SoftBeckhoff.Services
             {
                 var request = frame.Data.ToArray().ByteArrayToStructure<ReadRequestData>();
                 logger.LogDebug($"Data: {request}");
-                logger.LogDebug("Data: "+string.Join(":", frame.Data.ToArray().Select(b => b.ToString("X2"))));
 
                 if (request.IndexGroup == 61455)
                 {
@@ -71,18 +71,55 @@ namespace SoftBeckhoff.Services
                     responseData.AddRange(SymbolUploadInfo.GetBytes());
                 }
 
-                if (request.IndexGroup == 61451)
+                if (request.IndexGroup == 61451) //Symbols
                 {
                     var responseHeader = new ResponseHeaderData {Lenght = request.Lenght};
                     responseData.AddRange(responseHeader.GetBytes());
                     responseData.AddRange(AdsSymbolEntry.GetBytes());
 
                 }
+
+                if (request.IndexGroup == 61454) // Datatypes
+                {
+                    var responseHeader = new ResponseHeaderData {Lenght = request.Lenght};
+                    responseData.AddRange(responseHeader.GetBytes());
+                    responseData.AddRange(AdsDataTypeEntry.GetBytes());
+                }
+
+                if (request.IndexGroup == 61445)
+                {
+                    var responseHeader = new ResponseHeaderData {Lenght = request.Lenght};
+                    responseData.AddRange(responseHeader.GetBytes());
+                    responseData.Add((byte) (new Random().Next() % 255));
+                }
             }
             else if (frame.Header.CommandId == AdsCommandId.ReadState)
             {
                 responseData.AddRange(RunStatus);
             }
+            else if (frame.Header.CommandId == AdsCommandId.ReadWrite)
+            {
+                var request = frame.Data.ToArray().ByteArrayToStructure<ReadWriteRequestData>();
+                logger.LogDebug($"Data: {request}");
+                logger.LogDebug("Data: "+string.Join(":", frame.Data.ToArray().Skip(new ReadWriteRequestData().GetSize()).Select(b => b.ToString("X2"))));
+                //Data contains Instance path encoded
+                
+                if (request.IndexGroup == 61449)
+                {
+                    var responseHeader = new ResponseHeaderData {Lenght = AdsSymbolEntry.GetSize()};
+                    responseData.AddRange(responseHeader.GetBytes());
+                    responseData.AddRange(AdsSymbolEntry.GetBytes());
+                }
+            }
+            else if (frame.Header.CommandId == AdsCommandId.AddNotification)
+            {
+                
+            }
+            else if (frame.Header.CommandId == AdsCommandId.DeleteNotification)
+            {
+                
+            }   
+            
             
             var result = await server.AmsSendAsync(
                 new AmsCommand(
