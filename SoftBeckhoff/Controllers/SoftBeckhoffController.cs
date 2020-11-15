@@ -4,6 +4,8 @@ using System.Linq;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Logging;
+using SoftBeckhoff.Services;
+using TwinCAT.Ads.TcpRouter;
 
 namespace SoftBeckhoff.Controllers
 {
@@ -13,11 +15,13 @@ namespace SoftBeckhoff.Controllers
     {
         private readonly ILogger<SoftBeckhoffController> logger;
         private readonly IPlcService plcService;
+        private readonly IRouterService routerService;
 
-        public SoftBeckhoffController(ILogger<SoftBeckhoffController> logger, IPlcService plcService)
+        public SoftBeckhoffController(ILogger<SoftBeckhoffController> logger, IPlcService plcService, IRouterService routerService)
         {
             this.logger = logger;
             this.plcService = plcService;
+            this.routerService = routerService;
         }
 
         [HttpGet("/symbols")]
@@ -42,6 +46,18 @@ namespace SoftBeckhoff.Controllers
         public void CreateSymbol([FromBody]object symbol)
         {
             plcService.CreateSymbol(symbol);
+        }
+        
+        [HttpGet("/routes")]
+        public RouteCollection GetRoutes()
+        {
+            return routerService.GetRoutes();
+        }
+        
+        [HttpPut("/routes")]
+        public bool AddRoutes([FromBody]Route route)
+        {
+            return routerService.TryAddRoute(route);
         }
     }
 }

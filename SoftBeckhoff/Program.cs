@@ -17,13 +17,6 @@ namespace SoftBeckhoff
 
         public static IHostBuilder CreateHostBuilder(string[] args) =>
             Host.CreateDefaultBuilder(args)
-                .ConfigureServices((context, services) =>
-                {
-                    if (args.Contains("--add-router"))
-                    {
-                        services.AddHostedService<AdsRouterService>();
-                    }
-                })
                 .ConfigureAppConfiguration((context, config) =>
                 {
                     config.AddJsonFile("appsettings.json");

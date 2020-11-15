@@ -49,5 +49,11 @@ namespace SoftBeckhoff.Services
         {
             return amsTcpIpRouter.TryAddRoute(route);
         }
+
+        public RouteCollection GetRoutes()
+        {
+            //todo
+            return null;
+        }
     }
 }

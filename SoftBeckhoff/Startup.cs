@@ -12,6 +12,7 @@ using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
 using System.Reflection;
+using Microsoft.Extensions.Configuration.CommandLine;
 using SoftBeckhoff.Services;
 
 namespace SoftBeckhoff
@@ -54,16 +55,15 @@ namespace SoftBeckhoff
             services.AddCors();
             services.AddSingleton<IPlcService, BeckhoffService>();
 
-            if (services.Any(descriptor => descriptor.ImplementationType == typeof(AdsRouterService)))
+            if (Configuration.GetValue<bool>("add-router"))
             {
-//	            var adsRouterService = (AdsRouterService)serviceProvider.GetService(typeof(AdsRouterService));
-//	            services.AddSingleton<IRouterService>(adsRouterService);
-				//todo
+	            services.AddSingleton<AdsRouterService>();
+	            services.AddSingleton<IRouterService>(p => p.GetService<AdsRouterService>());
+	            services.AddSingleton<IHostedService>(p => p.GetService<AdsRouterService>());
             }
             else
             {
 	            services.AddSingleton<IRouterService, DummyRouterService>();
-
             }
         }
 

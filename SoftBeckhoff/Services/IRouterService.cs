@@ -6,6 +6,7 @@ namespace SoftBeckhoff.Services
     public interface IRouterService
     {
         bool TryAddRoute(Route route);
+        RouteCollection GetRoutes();
     }
 
     internal class DummyRouterService : IRouterService
@@ -20,6 +21,11 @@ namespace SoftBeckhoff.Services
         {
             logger.LogWarning($"Try to add Route '{route}' into dummy router service:\nrestart the software with --add-router argument or use the another local router service ");
             return false;
+        }
+
+        public RouteCollection GetRoutes()
+        {
+            return null;
         }
     }
 }
