@@ -1,13 +1,10 @@
-using System;
-using System.Collections.Generic;
 using System.Linq;
-using System.Threading.Tasks;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
-using TwinCAT.Ads.AdsRouterService;
+using SoftBeckhoff.Services;
 
 namespace SoftBeckhoff
 {
@@ -24,7 +21,7 @@ namespace SoftBeckhoff
                 {
                     if (args.Contains("--add-router"))
                     {
-                        services.AddHostedService<RouterService>();
+                        services.AddHostedService<AdsRouterService>();
                     }
                 })
                 .ConfigureAppConfiguration((context, config) =>

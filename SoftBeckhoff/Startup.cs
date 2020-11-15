@@ -53,6 +53,18 @@ namespace SoftBeckhoff
             });
             services.AddCors();
             services.AddSingleton<IPlcService, BeckhoffService>();
+
+            if (services.Any(descriptor => descriptor.ImplementationType == typeof(AdsRouterService)))
+            {
+//	            var adsRouterService = (AdsRouterService)serviceProvider.GetService(typeof(AdsRouterService));
+//	            services.AddSingleton<IRouterService>(adsRouterService);
+				//todo
+            }
+            else
+            {
+	            services.AddSingleton<IRouterService, DummyRouterService>();
+
+            }
         }
 
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.
