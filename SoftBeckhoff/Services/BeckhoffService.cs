@@ -1,4 +1,5 @@
 using System;
+using System.Collections.Generic;
 using System.Linq;
 using System.Reactive;
 using System.Reactive.Disposables;
@@ -33,7 +34,27 @@ namespace SoftBeckhoff.Services
 			disposables?.Dispose();	
 		}
 
-		private Task<Unit> InitializeAsync()
+        public IEnumerable<object> GetSymbols()
+        {
+	        throw new NotImplementedException();
+        }
+
+        public object GetSymbol(string name)
+        {
+	        throw new NotImplementedException();
+        }
+
+        public void SetSymbol(string name, object value)
+        {
+	        throw new NotImplementedException();
+        }
+
+        public void CreateSymbol(object symbol)
+        {
+	        throw new NotImplementedException();
+        }
+
+        private Task<Unit> InitializeAsync()
 		{
 			logger.LogInformation("Initializing Beckhoff server...");
 			server = new BeckhoffServer(logger);
