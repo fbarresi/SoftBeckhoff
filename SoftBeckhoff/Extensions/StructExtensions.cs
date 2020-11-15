@@ -7,14 +7,14 @@ using System.Runtime.InteropServices;
 
 namespace SoftBeckhoff.Extensions
 {
-     public static class StructExtensions
+  internal static class StructExtensions
   {
     public static T ByteArrayToStructure<T>(this byte[] bytes) where T : struct
     {
       GCHandle gcHandle = GCHandle.Alloc((object) bytes, GCHandleType.Pinned);
       try
       {
-        return (T) Marshal.PtrToStructure(gcHandle.AddrOfPinnedObject(), typeof (T));
+        return (T) Marshal.PtrToStructure(gcHandle.AddrOfPinnedObject(), typeof(T));
       }
       finally
       {
@@ -66,12 +66,14 @@ namespace SoftBeckhoff.Extensions
     private static object DeepSwap(object source)
     {
       source = StructExtensions.Swap(source);
-      foreach (FieldInfo fieldInfo in ((IEnumerable<FieldInfo>) source.GetType().GetFields()).Where<FieldInfo>((Func<FieldInfo, bool>) (f => f.GetValue(source) is Array)))
+      foreach (FieldInfo fieldInfo in ((IEnumerable<FieldInfo>) source.GetType().GetFields()).Where<FieldInfo>(
+        (Func<FieldInfo, bool>) (f => f.GetValue(source) is Array)))
       {
         Array array = StructExtensions.CopyArray(fieldInfo.GetValue(source) as Array);
         StructExtensions.CallRecursiveDeepSwapOnElementsOf(array);
         fieldInfo.SetValue(source, (object) array);
       }
+
       return source;
     }
 
@@ -108,11 +110,13 @@ namespace SoftBeckhoff.Extensions
             field.SetValue(obj, (object) (ulong) hostOrder6);
             break;
           case TypeCode.Single:
-            float single = System.BitConverter.ToSingle(((IEnumerable<byte>) System.BitConverter.GetBytes((float) source1)).Reverse<byte>().ToArray<byte>(), 0);
+            float single = System.BitConverter.ToSingle(
+              ((IEnumerable<byte>) System.BitConverter.GetBytes((float) source1)).Reverse<byte>().ToArray<byte>(), 0);
             field.SetValue(obj, (object) single);
             break;
           case TypeCode.Double:
-            double num = System.BitConverter.ToDouble(((IEnumerable<byte>) System.BitConverter.GetBytes((double) source1)).Reverse<byte>().ToArray<byte>(), 0);
+            double num = System.BitConverter.ToDouble(
+              ((IEnumerable<byte>) System.BitConverter.GetBytes((double) source1)).Reverse<byte>().ToArray<byte>(), 0);
             field.SetValue(obj, (object) num);
             break;
           default:
@@ -121,9 +125,11 @@ namespace SoftBeckhoff.Extensions
               field.SetValue(obj, StructExtensions.Swap(source1));
               break;
             }
+
             break;
         }
       }
+
       return obj;
     }
   }
