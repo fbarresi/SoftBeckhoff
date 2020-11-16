@@ -4,8 +4,8 @@ namespace SoftBeckhoff.Structs
 {
     [StructLayout(LayoutKind.Sequential, Pack = 1)]public struct ResponseHeaderData
     {
-        [MarshalAs(UnmanagedType.U4)]public int Result;
-        [MarshalAs(UnmanagedType.U4)]public int Lenght;
+        [MarshalAs(UnmanagedType.U4)]public uint Result;
+        [MarshalAs(UnmanagedType.U4)]public uint Lenght;
 
         public override string ToString()
         {

@@ -13,6 +13,7 @@ using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
 using System.Reflection;
 using Microsoft.Extensions.Configuration.CommandLine;
+using SoftBeckhoff.Interfaces;
 using SoftBeckhoff.Services;
 
 namespace SoftBeckhoff

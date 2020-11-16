@@ -2,6 +2,7 @@
 using System.Reactive;
 using System.Runtime.InteropServices;
 using System.Text;
+using SoftBeckhoff.Enums;
 using SoftBeckhoff.Extensions;
 
 namespace SoftBeckhoff.Structs

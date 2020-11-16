@@ -5,6 +5,9 @@ using System.Threading.Tasks;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
+using SoftBeckhoff.Interfaces;
+using SoftBeckhoff.Models;
+using TwinCAT.Ads;
 using TwinCAT.Ads.TcpRouter;
 
 namespace SoftBeckhoff.Services
@@ -45,9 +48,9 @@ namespace SoftBeckhoff.Services
             int routerStatus = (int) e.RouterStatus;
         }
 
-        public bool TryAddRoute(Route route)
+        public bool TryAddRoute(RouteSetting route)
         {
-            return amsTcpIpRouter.TryAddRoute(route);
+            return amsTcpIpRouter.TryAddRoute(new Route(route.Name, AmsNetId.Parse(route.AmsNetId), route.IpAddress));
         }
 
         public RouteCollection GetRoutes()

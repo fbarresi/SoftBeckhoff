@@ -4,6 +4,8 @@ using System.Linq;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Logging;
+using SoftBeckhoff.Interfaces;
+using SoftBeckhoff.Models;
 using SoftBeckhoff.Services;
 using TwinCAT.Ads.TcpRouter;
 
@@ -55,7 +57,7 @@ namespace SoftBeckhoff.Controllers
         }
         
         [HttpPut("/routes")]
-        public bool AddRoutes([FromBody]Route route)
+        public bool AddRoutes([FromBody]RouteSetting route)
         {
             return routerService.TryAddRoute(route);
         }

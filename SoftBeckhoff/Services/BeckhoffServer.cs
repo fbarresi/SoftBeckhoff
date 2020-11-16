@@ -106,7 +106,7 @@ namespace SoftBeckhoff.Services
                 
                 if (request.IndexGroup == 61449)
                 {
-                    var responseHeader = new ResponseHeaderData {Lenght = AdsSymbolEntry.GetSize()};
+                    var responseHeader = new ResponseHeaderData {Lenght = (uint)AdsSymbolEntry.GetSize()};
                     responseData.AddRange(responseHeader.GetBytes());
                     responseData.AddRange(AdsSymbolEntry.GetBytes());
                 }

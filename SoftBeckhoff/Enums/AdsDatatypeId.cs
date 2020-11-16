@@ -1,4 +1,4 @@
-﻿namespace SoftBeckhoff.Structs
+﻿namespace SoftBeckhoff.Enums
 {
     public enum AdsDatatypeId : uint
     {

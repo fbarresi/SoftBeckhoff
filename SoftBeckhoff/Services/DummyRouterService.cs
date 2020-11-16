@@ -1,14 +1,10 @@
 ﻿using Microsoft.Extensions.Logging;
+using SoftBeckhoff.Interfaces;
+using SoftBeckhoff.Models;
 using TwinCAT.Ads.TcpRouter;
 
 namespace SoftBeckhoff.Services
 {
-    public interface IRouterService
-    {
-        bool TryAddRoute(Route route);
-        RouteCollection GetRoutes();
-    }
-
     internal class DummyRouterService : IRouterService
     {
         private readonly ILogger<DummyRouterService> logger;
@@ -17,7 +13,7 @@ namespace SoftBeckhoff.Services
         {
             this.logger = logger;
         }
-        public bool TryAddRoute(Route route)
+        public bool TryAddRoute(RouteSetting route)
         {
             logger.LogWarning($"Try to add Route '{route}' into dummy router service:\nrestart the software with --add-router argument or use the another local router service ");
             return false;
