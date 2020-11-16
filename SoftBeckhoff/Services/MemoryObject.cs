@@ -17,13 +17,24 @@ namespace SoftBeckhoff.Services
             throw new ArgumentOutOfRangeException($"Memory block nr {indexGroup} doesn't exists!");
         }
 
+        public int Count(uint indexGroup)
+        {
+            if (memoryBlocks.ContainsKey(indexGroup))
+            {
+                return memoryBlocks[indexGroup].Count;
+            }
+
+            return 0;
+        }
+
         public void AddData(uint indexGroup, byte[] data)
         {
             if (memoryBlocks.ContainsKey(indexGroup))
             {
                 memoryBlocks[indexGroup].AddRange(data);
             }
-            memoryBlocks.Add(indexGroup, new List<byte>(data));
+            else
+                memoryBlocks.Add(indexGroup, new List<byte>(data));
         }
         
         public void SetData(uint indexGroup, byte[] data)
@@ -32,7 +43,8 @@ namespace SoftBeckhoff.Services
             {
                 memoryBlocks[indexGroup] = new List<byte>(data);
             }
-            memoryBlocks.Add(indexGroup, new List<byte>(data));
+            else
+                memoryBlocks.Add(indexGroup, new List<byte>(data));
         }
         
         public void SetData(uint indexGroup, uint offset, byte[] data)
@@ -46,7 +58,8 @@ namespace SoftBeckhoff.Services
                     memoryBlocks[indexGroup][(int) (offset + i)] = data[i];
                 }
             }
-            throw new ArgumentOutOfRangeException($"Memory block nr {indexGroup} doesn't exists!");
+            else
+                throw new ArgumentOutOfRangeException($"Memory block nr {indexGroup} doesn't exists!");
         }
     }
 }
