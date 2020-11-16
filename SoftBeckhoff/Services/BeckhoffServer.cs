@@ -20,10 +20,14 @@ namespace SoftBeckhoff.Services
         private readonly ILogger logger;
         private readonly AmsServerNet server;
         private readonly CompositeDisposable disposables = new CompositeDisposable();
+        private readonly MemoryObject memory = new MemoryObject();
 
         public BeckhoffServer(ILogger logger)
         {
             this.logger = logger;
+
+            InitializeServerMemory();
+            
             server = (AmsServerNet) typeof(AmsServerNet)
                 .GetConstructor(BindingFlags.NonPublic | BindingFlags.Instance, 
                     null, 
@@ -41,6 +45,27 @@ namespace SoftBeckhoff.Services
 
             server.RegisterReceiver(this);
         }
+
+        private void InitializeServerMemory()
+        {
+            //Set Upload Info
+            memory.SetData(61455, SymbolUploadInfo.GetBytes());
+            
+            //Set Symbols for read
+            memory.SetData(61451, AdsSymbolEntry.GetBytes());
+            //Set symbols for readwrite
+            memory.SetData(61449, AdsSymbolEntry.GetBytes());
+            //Set symbols for readwrite (Handler?)
+            memory.SetData(61443, AdsSymbolEntry.GetBytes());
+            
+            //Set Datatype
+            memory.SetData(61454, AdsDataTypeEntry.GetBytes());
+            
+            //Set Data            
+            memory.SetData(61472, new byte[1]);
+
+        }
+        
 
         public void Dispose()
         {
@@ -64,34 +89,11 @@ namespace SoftBeckhoff.Services
                 var request = frame.Data.ToArray().ByteArrayToStructure<ReadRequestData>();
                 logger.LogDebug($"Data: {request}");
 
-                if (request.IndexGroup == 61455)
-                {
-                    var responseHeader = new ResponseHeaderData {Lenght = request.Lenght};
-                    responseData.AddRange(responseHeader.GetBytes());
-                    responseData.AddRange(SymbolUploadInfo.GetBytes());
-                }
-
-                if (request.IndexGroup == 61451) //Symbols
-                {
-                    var responseHeader = new ResponseHeaderData {Lenght = request.Lenght};
-                    responseData.AddRange(responseHeader.GetBytes());
-                    responseData.AddRange(AdsSymbolEntry.GetBytes());
-
-                }
-
-                if (request.IndexGroup == 61454) // Datatypes
-                {
-                    var responseHeader = new ResponseHeaderData {Lenght = request.Lenght};
-                    responseData.AddRange(responseHeader.GetBytes());
-                    responseData.AddRange(AdsDataTypeEntry.GetBytes());
-                }
-
-                if (request.IndexGroup == 61445)
-                {
-                    var responseHeader = new ResponseHeaderData {Lenght = request.Lenght};
-                    responseData.AddRange(responseHeader.GetBytes());
-                    responseData.Add((byte) (new Random().Next() % 255));
-                }
+                var data = memory.GetData(request.IndexGroup, request.Offset, request.Length);
+                var responseHeader = new ResponseHeaderData {Lenght = (uint)data.Length};
+                responseData.AddRange(responseHeader.GetBytes());
+                responseData.AddRange(data);
+                
             }
             else if (frame.Header.CommandId == AdsCommandId.ReadState)
             {
@@ -104,12 +106,11 @@ namespace SoftBeckhoff.Services
                 logger.LogDebug("Data: "+string.Join(":", frame.Data.ToArray().Skip(new ReadWriteRequestData().GetSize()).Select(b => b.ToString("X2"))));
                 //Data contains Instance path encoded
                 
-                if (request.IndexGroup == 61449)
-                {
-                    var responseHeader = new ResponseHeaderData {Lenght = (uint)AdsSymbolEntry.GetSize()};
-                    responseData.AddRange(responseHeader.GetBytes());
-                    responseData.AddRange(AdsSymbolEntry.GetBytes());
-                }
+                var data = memory.GetData(request.IndexGroup, request.Offset, request.ReadLength);
+                var responseHeader = new ResponseHeaderData {Lenght = (uint)data.Length};
+                responseData.AddRange(responseHeader.GetBytes());
+                responseData.AddRange(data);
+                
             }
             else if (frame.Header.CommandId == AdsCommandId.AddNotification)
             {

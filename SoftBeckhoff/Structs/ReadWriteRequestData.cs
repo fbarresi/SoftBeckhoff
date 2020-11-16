@@ -6,12 +6,12 @@ namespace SoftBeckhoff.Structs
     {
         [MarshalAs(UnmanagedType.U4)]public uint IndexGroup;
         [MarshalAs(UnmanagedType.U4)]public uint Offset;
-        [MarshalAs(UnmanagedType.U4)]public uint ReadLenght;
-        [MarshalAs(UnmanagedType.U4)]public uint WriteLenght;
+        [MarshalAs(UnmanagedType.U4)]public uint ReadLength;
+        [MarshalAs(UnmanagedType.U4)]public uint WriteLength;
 
         public override string ToString()
         {
-            return $"{nameof(IndexGroup)}:{IndexGroup}, {nameof(Offset)}:{Offset}, {nameof(ReadLenght)}:{ReadLenght}, {nameof(WriteLenght)}:{WriteLenght}";
+            return $"{nameof(IndexGroup)}:{IndexGroup}, {nameof(Offset)}:{Offset}, {nameof(ReadLength)}:{ReadLength}, {nameof(WriteLength)}:{WriteLength}";
         }
     }
 }

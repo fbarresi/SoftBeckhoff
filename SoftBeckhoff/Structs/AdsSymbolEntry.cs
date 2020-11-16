@@ -33,7 +33,7 @@ namespace SoftBeckhoff.Structs
         public AdsSymbolEntry(Unit unit)
         {
             EntryLength = (uint) new AdsSymbolEntry().GetSize();
-            IndexGroup = 61445;
+            IndexGroup = 61472;
             IndexOffset = 0;
             Size = 1;
             DataType = AdsDatatypeId.ADST_UINT8;
