@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Reactive;
 using System.Reactive.Disposables;
+using System.Reactive.Linq;
 using System.Reflection;
 using System.Text;
 using System.Threading;
@@ -52,6 +53,7 @@ namespace SoftBeckhoff.Services
         }
 
         public Dictionary<string, AdsSymbol> Symbols { get; set; } = new Dictionary<string, AdsSymbol>();
+        public Dictionary<int, IDisposable> Notifications { get; set; } = new Dictionary<int, IDisposable>();
 
         public void AddSymbol(AdsSymbol symbol)
         {
@@ -90,12 +92,14 @@ namespace SoftBeckhoff.Services
             
             //Set Symbols for read
             memory.SetData(61451, new byte[0]);
+            
             //Set symbols for readwrite
             memory.SetData(61449, new byte[0]);
             //Set symbols for readwrite Handlers
             memory.SetData(61443, new byte[0]);
+            
             //cleanup
-            memory.SetData(61446, new byte[0]);
+            memory.SetData(61446, new byte[1024]);
             
             //Set Datatype
             memory.SetData(61454, AdsDataTypeEntry.GetBytes());
@@ -109,6 +113,10 @@ namespace SoftBeckhoff.Services
         public void Dispose()
         {
             disposables?.Dispose();
+            foreach (var notification in Notifications)
+            {
+                notification.Value.Dispose();
+            }
         }
 
         public byte[] RunStatus { get; set; } = {0, 0, 0, 0, 5, 0, 0, 0};
@@ -179,11 +187,17 @@ namespace SoftBeckhoff.Services
             }
             else if (frame.Header.CommandId == AdsCommandId.AddNotification)
             {
-                var responseHeader = new ResponseHeaderData {Lenght = (uint)new Random().Next()};
-                responseData.AddRange(responseHeader.GetBytes());
+                var request = frame.Data.ToArray().ByteArrayToStructure<NotificationRequest>();
+                var handler = new Random().Next();
+                CreateNotification(handler, request);
+                responseData.AddRange(0.GetBytes());
+                responseData.AddRange(handler.GetBytes());
+
             }
             else if (frame.Header.CommandId == AdsCommandId.DeleteNotification)
             {
+                var handler = BitConverter.ToInt32(frame.Data.ToArray());
+                DeleteNorification(handler);
                 responseData.AddRange(0.GetBytes());
             }   
             
@@ -195,6 +209,120 @@ namespace SoftBeckhoff.Services
                     new ReadOnlyMemory<byte>(responseData.ToArray())), cancel);
             
             return result;
+        }
+
+        private void DeleteNorification(int handler)
+        {
+            if (Notifications.ContainsKey(handler))
+            {
+                Notifications[handler].Dispose();
+                Notifications.Remove(handler);
+            }
+        }
+
+        private void CreateNotification(int handler, NotificationRequest request)
+        {
+            var cycleTime = TimeSpan.FromMilliseconds(request.CycleTime);
+            var disposable = Observable.Timer(TimeSpan.FromMilliseconds(10), cycleTime)
+                    .Select(_ => memory.GetData(request.IndexGroup, request.IndexOffset, request.Length))
+                    .DistinctUntilChanged(new ByteEqualityComparer())
+                    .SelectMany(data => SendNotification(handler, data))
+                    .Subscribe()
+                ;
+            Notifications.Add(handler, disposable);
+        }
+
+        private Task<Unit> SendNotification(int handler, byte[] data)
+        {
+            return Task.FromResult(Unit.Default);
+        }
+    }
+
+    internal class ByteEqualityComparer : IEqualityComparer<byte[]>
+    {
+        //partially copied from https://searchcode.com/codesearch/view/561886/
+        
+        /// <summary>
+        /// Determines whether the specified objects are equal.
+        /// </summary>
+        /// <param name="x">The first object to compare.</param>
+        /// <param name="y">The second object to compare.</param>
+        /// <returns>
+        /// true if the specified objects are equal; otherwise, false.
+        /// </returns>
+        public static bool AreEqual(byte[] x, byte[] y)
+        {
+            if (x == y)
+                return true;
+
+            if (x == null || y == null || x.Length != y.Length)
+                return false;
+
+            // Simple (slower) version:
+            for (var i = 0; i < x.Length; i++)
+            {
+                if (x[i] != y[i])
+                    return false;
+            }
+
+            return true;
+        }
+
+
+
+        /// <summary>
+        /// Returns a hash code for the specified object.
+        /// </summary>
+        /// <param name="obj">The <see cref="T:System.Object"/> for which a hash code is to be returned.</param>
+        /// <returns>A hash code for the specified object.</returns>
+        /// <exception cref="T:System.ArgumentNullException">The type of <paramref name="obj"/> is a reference type and
+        /// <paramref name="obj"/> is null.</exception>
+        public static int GetHashCode(byte[] obj)
+        {
+            // FNV-style hash
+            // http://bretm.home.comcast.net/~bretm/hash/6.html
+            unchecked
+            {
+                const int p = 16777619;
+                var hash = (int)2166136261;
+
+                for (var i = 0; i < obj.Length; i++)
+                {
+                    hash = (hash ^ obj[i]) * p;
+                }
+
+                hash += hash << 13;
+                hash ^= hash >> 7;
+                hash += hash << 3;
+                hash ^= hash >> 17;
+                hash += hash << 5;
+                return hash;
+            }
+        }
+
+        /// <summary>
+        /// Determines whether the specified objects are equal.
+        /// </summary>
+        /// <param name="x">The first object to compare.</param>
+        /// <param name="y">The second object to compare.</param>
+        /// <returns>
+        /// true if the specified objects are equal; otherwise, false.
+        /// </returns>
+        bool IEqualityComparer<byte[]>.Equals(byte[] x, byte[] y)
+        {
+            return AreEqual(x, y);
+        }
+
+        /// <summary>
+        /// Returns a hash code for the specified object.
+        /// </summary>
+        /// <param name="obj">The <see cref="T:System.Object"/> for which a hash code is to be returned.</param>
+        /// <returns>A hash code for the specified object.</returns>
+        /// <exception cref="T:System.ArgumentNullException">The type of <paramref name="obj"/> is a reference type and
+        /// <paramref name="obj"/> is null.</exception>
+        int IEqualityComparer<byte[]>.GetHashCode(byte[] obj)
+        {
+            return GetHashCode(obj);
         }
     }
 }
