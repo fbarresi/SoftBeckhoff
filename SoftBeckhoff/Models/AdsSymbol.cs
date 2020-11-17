@@ -11,17 +11,21 @@ namespace SoftBeckhoff.Models
     public class AdsSymbol : IMarshable
     {
         private readonly string name;
+        private readonly Type type;
         private AdsSymbolEntryHeader header;
         private string adsType;
 
         public AdsSymbol(string name, Type type)
         {
             this.name = name;
+            this.type = type;
             header = new AdsSymbolEntryHeader(type);
             adsType = type.ToAdsDatatypeName();
         }
 
+        public AdsSymbolEntryHeader Header => header;
         public string Name => name;
+        public Type Type => type;
         public int Offset { get; set; }
         public int Size => (int) header.Size;
 

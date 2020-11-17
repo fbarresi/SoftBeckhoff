@@ -8,6 +8,7 @@ using System.Text;
 using System.Threading.Tasks;
 using Microsoft.Extensions.Logging;
 using SoftBeckhoff.Interfaces;
+using SoftBeckhoff.Models;
 
 namespace SoftBeckhoff.Services
 {
@@ -35,26 +36,35 @@ namespace SoftBeckhoff.Services
 			disposables?.Dispose();	
 		}
 
-        public IEnumerable<object> GetSymbols()
+        public IEnumerable<SymbolDto> GetSymbols()
         {
-	        throw new NotImplementedException();
+	        return server.Symbols.Select(pair => new SymbolDto(){Name = pair.Key, Type = pair.Value.Type.Name});
         }
 
-        public object GetSymbol(string name)
+        public byte[] GetSymbol(string name)
         {
-	        throw new NotImplementedException();
+	        return server.ReadSymbol(name);
         }
 
-        public void SetSymbol(string name, object value)
+        public void SetSymbol(string name, byte[] value)
         {
-	        throw new NotImplementedException();
+	        server.WriteSymbol(name, value);
         }
 
-        public void CreateSymbol(object symbol)
+        public void CreateSymbol(SymbolDto symbol)
         {
-	        throw new NotImplementedException();
+	        var symbolType = symbol.Type.StartsWith("System.") ? symbol.Type : "System." + symbol.Type;
+	        var type = Type.GetType(symbolType);
+	        if (type != null)
+	        {
+		        var adsSymbol = new AdsSymbol(symbol.Name, type);
+		        server.AddSymbol(adsSymbol);
+	        }
+	        else
+		        throw new Exception($"Unable to find type named {symbolType}");
         }
 
+        
         private Task<Unit> InitializeAsync()
 		{
 			logger.LogInformation("Initializing Beckhoff server...");

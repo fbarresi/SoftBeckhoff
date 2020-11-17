@@ -27,25 +27,25 @@ namespace SoftBeckhoff.Controllers
         }
 
         [HttpGet("/symbols")]
-        public IEnumerable<object> GetSymbols()
+        public IEnumerable<SymbolDto> GetSymbols()
         {
             return plcService.GetSymbols();
         }
         
         [HttpGet("/symbols/{name}")]
-        public object GetSymbol([FromRoute]string name)
+        public byte[] GetSymbol([FromRoute]string name)
         {
             return plcService.GetSymbol(name);
         }
         
         [HttpPut("/symbols/{name}")]
-        public void SetSymbol([FromRoute]string name, [FromBody]object value)
+        public void SetSymbol([FromRoute]string name, [FromBody]byte[] value)
         {
             plcService.SetSymbol(name, value);
         }
         
         [HttpPost("/symbols")]
-        public void CreateSymbol([FromBody]object symbol)
+        public void CreateSymbol([FromBody]SymbolDto symbol)
         {
             plcService.CreateSymbol(symbol);
         }

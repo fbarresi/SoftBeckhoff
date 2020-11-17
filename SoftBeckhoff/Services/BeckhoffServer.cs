@@ -56,8 +56,31 @@ namespace SoftBeckhoff.Services
         public Dictionary<string, AdsSymbol> Symbols { get; set; } = new Dictionary<string, AdsSymbol>();
         public Dictionary<int, IDisposable> Notifications { get; set; } = new Dictionary<int, IDisposable>();
 
+        public byte[] ReadSymbol(string name)
+        {
+            if (Symbols.ContainsKey(name))
+            {
+                return memory.GetData(Symbols[name].Header.IndexGroup, Symbols[name].Header.IndexOffset,
+                    Symbols[name].Header.Size);
+            }
+            else
+                throw new ArgumentException("Symbol not found!");
+        }
+        
+        public void WriteSymbol(string name, byte[] data)
+        {
+            if (Symbols.ContainsKey(name))
+            {
+                memory.SetData(Symbols[name].Header.IndexGroup, Symbols[name].Header.IndexOffset, data);
+            }
+            else
+                throw new ArgumentException("Symbol not found!");
+        }
+        
         public void AddSymbol(AdsSymbol symbol)
         {
+            if (Symbols.ContainsKey(symbol.Name)) throw new ArgumentException($"Symbol with the same name ('{symbol.Name}') already exists");
+            
             //Define Symbol Offset
             var offset = GetCurrentDataOffset();
             symbol.Offset = offset;
