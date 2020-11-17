@@ -11,16 +11,19 @@ Please note that this software is still under development.
 ## Features
 
 - :heavy_check_mark: Multiplatform + Docker Support (Windows, Linux, Mac OS)
-- 🤞 Configurable with an Rest API (Swagger on-board) (very soon available)
+- :heavy_check_mark: Configurable with an Rest API (Swagger)
 - :heavy_check_mark: Works and act like a real Beckhoff!
 - :heavy_check_mark: All native types are supported
+- :heavy_check_mark: Route management on-board and over Rest API
 
-## Under heavy development...
+## Still under (heavy) development...
 
 - 🌈 Support for custom compex types and arrays
-- 🌈 Smart route management
 
 ## How to use it?
+
+A good tool for testing and writing symbols is [TwincatAdsTool](https://github.com/fbarresi/TwincatAdsTool).
+This software was event tested with it.
 
 ### run with docker
 
@@ -31,6 +34,7 @@ docker run -p 8080:80 -p 852:852 -p 48898:48898 --name softBeckhoff fbarresi/sof
 
 ### Run it locally
 `todo`
+`basically with source code and dotnet run`
 
 ## Would you like to contribute? 
 Yes, please!
@@ -41,8 +45,8 @@ Yes, please!
 
 ## Other interesting related projects
 
-- [BeckhoffHttpClient](https://github.com/fbarresi/BeckhoffHttpClient), an _unofficial_ TwinCAT function for HTTP requests
 - [TwincatAdsTool](https://github.com/fbarresi/TwincatAdsTool) your swiss knife for twincat development.
+- [BeckhoffHttpClient](https://github.com/fbarresi/BeckhoffHttpClient), an _unofficial_ TwinCAT function for HTTP requests
 - [BeckhoffS7Client](https://github.com/fbarresi/BeckhoffS7Client), an _unofficial_ TwinCAT function for S7 communication
 
 ## Credits
@@ -50,3 +54,6 @@ Yes, please!
 Special thanks to [JetBrains](https://www.jetbrains.com/?from=SoftBeckhoff) for supporting this open source project.
 
 <a href="https://www.jetbrains.com/?from=SoftBeckhoff"><img height="200" src="https://www.jetbrains.com/company/brand/img/jetbrains_logo.png"></a>
+
+#### did you understand that you didn't understand?
+Don't hesitate to write me or open an issue into this project!
