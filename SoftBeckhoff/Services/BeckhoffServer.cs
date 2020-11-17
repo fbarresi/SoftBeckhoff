@@ -24,6 +24,7 @@ namespace SoftBeckhoff.Services
         private readonly AmsServerNet server;
         private readonly CompositeDisposable disposables = new CompositeDisposable();
         private readonly MemoryObject memory = new MemoryObject();
+        private uint notificationCounter = 1;
 
         public BeckhoffServer(ILogger logger)
         {
@@ -189,7 +190,7 @@ namespace SoftBeckhoff.Services
             {
                 var request = frame.Data.ToArray().ByteArrayToStructure<NotificationRequest>();
                 var handler = new Random().Next();
-                CreateNotification(handler, request);
+                CreateNotification(handler, request, frame.Header.Sender, frame.Header.Target);
                 responseData.AddRange(0.GetBytes());
                 responseData.AddRange(handler.GetBytes());
 
@@ -200,7 +201,6 @@ namespace SoftBeckhoff.Services
                 DeleteNorification(handler);
                 responseData.AddRange(0.GetBytes());
             }   
-            
             
             var result = await server.AmsSendAsync(
                 new AmsCommand(
@@ -220,109 +220,54 @@ namespace SoftBeckhoff.Services
             }
         }
 
-        private void CreateNotification(int handler, NotificationRequest request)
+        private void CreateNotification(int handler, NotificationRequest request, AmsAddress target, AmsAddress sender)
         {
-            var cycleTime = TimeSpan.FromMilliseconds(request.CycleTime);
+            var cycleTime = TimeSpan.FromMilliseconds(100);
             var disposable = Observable.Timer(TimeSpan.FromMilliseconds(10), cycleTime)
                     .Select(_ => memory.GetData(request.IndexGroup, request.IndexOffset, request.Length))
                     .DistinctUntilChanged(new ByteEqualityComparer())
-                    .SelectMany(data => SendNotification(handler, data))
+                    .Select(data => CreateNotificationStream(handler, data))
+                    .SelectMany(data => SendNotification(target, sender, data))
                     .Subscribe()
                 ;
             Notifications.Add(handler, disposable);
         }
 
-        private Task<Unit> SendNotification(int handler, byte[] data)
+        private async Task<Unit> SendNotification(AmsAddress target, AmsAddress sender, byte[] data)
         {
-            return Task.FromResult(Unit.Default);
-        }
-    }
-
-    internal class ByteEqualityComparer : IEqualityComparer<byte[]>
-    {
-        //partially copied from https://searchcode.com/codesearch/view/561886/
-        
-        /// <summary>
-        /// Determines whether the specified objects are equal.
-        /// </summary>
-        /// <param name="x">The first object to compare.</param>
-        /// <param name="y">The second object to compare.</param>
-        /// <returns>
-        /// true if the specified objects are equal; otherwise, false.
-        /// </returns>
-        public static bool AreEqual(byte[] x, byte[] y)
-        {
-            if (x == y)
-                return true;
-
-            if (x == null || y == null || x.Length != y.Length)
-                return false;
-
-            // Simple (slower) version:
-            for (var i = 0; i < x.Length; i++)
-            {
-                if (x[i] != y[i])
-                    return false;
-            }
-
-            return true;
+            await server.AmsSendAsync(
+                new AmsCommand(
+                    new AmsHeader(target, sender, AdsCommandId.Notification,
+                        AmsStateFlags.MaskAdsRequest, (uint) data.Length, 0, notificationCounter),
+                    new ReadOnlyMemory<byte>(data)), CancellationToken.None);
+            notificationCounter++;
+            return Unit.Default;
         }
 
-
-
-        /// <summary>
-        /// Returns a hash code for the specified object.
-        /// </summary>
-        /// <param name="obj">The <see cref="T:System.Object"/> for which a hash code is to be returned.</param>
-        /// <returns>A hash code for the specified object.</returns>
-        /// <exception cref="T:System.ArgumentNullException">The type of <paramref name="obj"/> is a reference type and
-        /// <paramref name="obj"/> is null.</exception>
-        public static int GetHashCode(byte[] obj)
+        private byte[] CreateNotificationStream(int handler, byte[] data)
         {
-            // FNV-style hash
-            // http://bretm.home.comcast.net/~bretm/hash/6.html
-            unchecked
+            var stream = new AdsNotification()
             {
-                const int p = 16777619;
-                var hash = (int)2166136261;
-
-                for (var i = 0; i < obj.Length; i++)
+                Length = (uint) (default(AdsNotification).GetSize()+data.Length),
+                Stamps = 1,
+                AdsNotificationHeader = new AdsNotificationHeader()
                 {
-                    hash = (hash ^ obj[i]) * p;
+                    Samples = 1,
+                    Timestamp = DateTime.UtcNow.ToFileTime(),
+                    Sample = new AdsNotificationSample()
+                    {
+                        Handle = (uint) handler,
+                        Size = (uint) data.Length
+                    }
                 }
-
-                hash += hash << 13;
-                hash ^= hash >> 7;
-                hash += hash << 3;
-                hash ^= hash >> 17;
-                hash += hash << 5;
-                return hash;
-            }
+            };
+            
+            var buffer = new List<byte>();
+            buffer.AddRange(stream.GetBytes());
+            buffer.AddRange(data);
+            return buffer.ToArray();
         }
 
-        /// <summary>
-        /// Determines whether the specified objects are equal.
-        /// </summary>
-        /// <param name="x">The first object to compare.</param>
-        /// <param name="y">The second object to compare.</param>
-        /// <returns>
-        /// true if the specified objects are equal; otherwise, false.
-        /// </returns>
-        bool IEqualityComparer<byte[]>.Equals(byte[] x, byte[] y)
-        {
-            return AreEqual(x, y);
-        }
-
-        /// <summary>
-        /// Returns a hash code for the specified object.
-        /// </summary>
-        /// <param name="obj">The <see cref="T:System.Object"/> for which a hash code is to be returned.</param>
-        /// <returns>A hash code for the specified object.</returns>
-        /// <exception cref="T:System.ArgumentNullException">The type of <paramref name="obj"/> is a reference type and
-        /// <paramref name="obj"/> is null.</exception>
-        int IEqualityComparer<byte[]>.GetHashCode(byte[] obj)
-        {
-            return GetHashCode(obj);
-        }
+        
     }
 }
