@@ -23,13 +23,13 @@ Please note that this software is still under development.
 ## How to use it?
 
 A good tool for testing and writing symbols is [TwincatAdsTool](https://github.com/fbarresi/TwincatAdsTool).
-This software was event tested with it.
+This software was even tested with it.
 
 ### run with docker
 
 ```docker
 docker pull fbarresi/softbeckhoff:latest
-docker run -p 8080:80 -p 852:852 -p 48898:48898 --name softBeckhoff fbarresi/softbeckhoff:latest
+docker run -p 8080:80 -p 48898:48898 --name softBeckhoff fbarresi/softbeckhoff:latest
 ```
 
 ### Run it locally
